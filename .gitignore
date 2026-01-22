@@ -3,36 +3,29 @@
 # ===============================
 
 # -------------------------------
-# Python
+# Python Cache
 # -------------------------------
 __pycache__/
 *.py[cod]
 *$py.class
-*.so
-.Python
+
+# -------------------------------
+# Virtual Environment
+# -------------------------------
 env/
 venv/
-ENV/
 .venv/
-pip-log.txt
-pip-delete-this-directory.txt
 
 # -------------------------------
-# PyInstaller
+# PyInstaller Build (temp files)
 # -------------------------------
 build/
-dist/
-*.spec
-*.manifest
-*.exe
 
 # -------------------------------
-# FFmpeg Binaries (large files)
+# FFmpeg Binaries (too large ~200MB)
 # -------------------------------
 ffmpeg.exe
 ffprobe.exe
-ffmpeg
-ffprobe
 
 # -------------------------------
 # IDE / Editor
@@ -41,45 +34,18 @@ ffprobe
 .vscode/
 *.swp
 *.swo
-*~
-.project
-.pydevproject
-.settings/
 
 # -------------------------------
 # OS Generated
 # -------------------------------
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
 Thumbs.db
 desktop.ini
 
 # -------------------------------
-# Output Files
+# Video Output Folder
 # -------------------------------
 Output/
-*.mp4
-*.mkv
-*.avi
-*.mov
-*.webm
-!test_samples/
-
-# -------------------------------
-# Installer Output
-# -------------------------------
-Setup_*.exe
-*.iss.bak
-
-# -------------------------------
-# Logs
-# -------------------------------
-*.log
-logs/
 
 # -------------------------------
 # Temporary Files
@@ -87,3 +53,4 @@ logs/
 *.tmp
 *.temp
 *.bak
+*.log
