@@ -5,7 +5,7 @@
   <img src="https://img.shields.io/badge/Version-1.0.0-blue?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/Python-3.8+-yellow?style=for-the-badge&logo=python&logoColor=white" alt="Python">
   <img src="https://img.shields.io/badge/Platform-Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white" alt="Windows">
-  <img src="https://img.shields.io/badge/FFmpeg-Included-007808?style=for-the-badge&logo=ffmpeg&logoColor=white" alt="FFmpeg">
+  <img src="https://img.shields.io/badge/FFmpeg-Required-007808?style=for-the-badge&logo=ffmpeg&logoColor=white" alt="FFmpeg">
   <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License">
 
   <h3>Discord-Friendly Video Compressor for Free Tier Users</h3>
@@ -68,7 +68,7 @@ This tool automatically compresses any video to fit under the 10MB limit with a 
 | **🖥️ Dual Mode: GUI + CLI** | Use the friendly window interface or command-line for batch processing. |
 | **🖱️ Right-Click Integration** | Compress videos instantly via Windows context menu - no need to open the app! |
 | **📊 Real-Time Progress** | Watch the compression progress with a live percentage indicator. |
-| **📦 Portable & Self-Contained** | FFmpeg is bundled - no external dependencies required. |
+| **📦 Portable & Self-Contained** | FFmpeg bundled in installer - just download and run! |
 | **🎥 Multi-Format Support** | Works with MP4, MKV, AVI, MOV, and WEBM files. |
 
 ---
@@ -91,8 +91,8 @@ Download `VideoCompressor9MB.exe` directly and place it alongside `ffmpeg.exe` a
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/YOUR_USERNAME/video-compressor-9mb.git
-cd video-compressor-9mb
+git clone https://github.com/snowb4ll/discord-video-compressor.git
+cd discord-video-compressor
 
 # 2. Install dependencies
 pip install -r Requirements.txt
@@ -199,17 +199,20 @@ MIN_VIDEO_BITRATE_KBPS = 64   # Minimum video bitrate (kbps)
 ## 📂 Project Structure
 
 ```bash
-video-compressor-9mb/
+discord-video-compressor/
 ├── app.py                    # 🐍 Main Application (GUI + CLI)
 ├── app.exe                   # 📦 Compiled Executable
-├── ffmpeg.exe                # 🎬 FFmpeg Encoder
-├── ffprobe.exe               # 🔍 FFmpeg Probe Tool
 ├── Requirements.txt          # 📋 Python Dependencies
 ├── VideoCompressor9MB.spec   # 🔧 PyInstaller Spec File
 ├── setup_compress9mb.iss     # 📦 Inno Setup Installer Script
+├── .gitignore                # 🚫 Git Ignore Rules
 ├── dist/                     # 📁 Distribution Output
 │   └── VideoCompressor9MB.exe
 └── README.md                 # 📖 This File
+
+# Not in repo (download separately):
+# ffmpeg.exe                  # 🎬 FFmpeg Encoder (~100MB)
+# ffprobe.exe                 # 🔍 FFmpeg Probe Tool (~100MB)
 ```
 
 ---
