@@ -1,0 +1,89 @@
+# ===============================
+# Video Compressor - .gitignore
+# ===============================
+
+# -------------------------------
+# Python
+# -------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# -------------------------------
+# PyInstaller
+# -------------------------------
+build/
+dist/
+*.spec
+*.manifest
+*.exe
+
+# -------------------------------
+# FFmpeg Binaries (large files)
+# -------------------------------
+ffmpeg.exe
+ffprobe.exe
+ffmpeg
+ffprobe
+
+# -------------------------------
+# IDE / Editor
+# -------------------------------
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+
+# -------------------------------
+# OS Generated
+# -------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# -------------------------------
+# Output Files
+# -------------------------------
+Output/
+*.mp4
+*.mkv
+*.avi
+*.mov
+*.webm
+!test_samples/
+
+# -------------------------------
+# Installer Output
+# -------------------------------
+Setup_*.exe
+*.iss.bak
+
+# -------------------------------
+# Logs
+# -------------------------------
+*.log
+logs/
+
+# -------------------------------
+# Temporary Files
+# -------------------------------
+*.tmp
+*.temp
+*.bak
