@@ -1,2 +1,12 @@
-win10toast==0.9
+# Video Compressor to ~9MB - Dependencies
+# PyQt5 for GUI framework
+PyQt5>=5.15.0
+
+# File type detection for video files
+filetype>=0.11.0
+
+# Build tools (optional, for creating executable)
 pyinstaller==6.15.0
+
+# Windows toast notifications (legacy, from Tkinter version)
+# win10toast==0.9  # Not used in PyQt5 version
