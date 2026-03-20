@@ -269,7 +269,8 @@ class MainWindow(QMainWindow):
 
     def on_compression_error(self, error_msg: str):
         """Called when compression fails"""
-        self.btn_compress.setEnabled(True)
+        self.btn_trim_compress.setEnabled(True)
+        self.btn_compress_full.setEnabled(True)
         self.status_bar.showMessage(t('status_error'))
         QMessageBox.critical(self, t('error'), error_msg)
 
