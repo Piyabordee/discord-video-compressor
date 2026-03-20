@@ -29,5 +29,17 @@
   "theme": "Theme:",
   "about_title": "About",
   "about_version": "Version: {version}",
-  "about_description": "Video compressor for Discord (Free Tier)"
+  "about_description": "Video compressor for Discord (Free Tier)",
+  "video_preview": "Video Preview",
+  "trim_range": "Trim Range",
+  "preview_trim": "Preview Trim",
+  "reset_trim": "Reset",
+  "trim_compress_btn": "Trim + Compress",
+  "compress_full_btn": "Compress Full (No Trim)",
+  "preview_first": "Please preview trim first",
+  "generating_preview": "Generating preview...",
+  "preview_ready": "Preview ready. Click Trim + Compress when satisfied",
+  "player_not_found": "mpv player not found (install from mpv.io)",
+  "trim_preview_failed": "Trim preview failed",
+  "range_too_short": "Range too short (minimum 1 second)"
 }

@@ -29,5 +29,17 @@
   "theme": "ธีม:",
   "about_title": "เกี่ยวกับ",
   "about_version": "รุ่น: {version}",
-  "about_description": "โปรแกรมบีบอัดวิดีโอสำหรับ Discord (Free Tier)"
+  "about_description": "โปรแกรมบีบอัดวิดีโอสำหรับ Discord (Free Tier)",
+  "video_preview": "ตัวอย่างวิดีโอ",
+  "trim_range": "ช่วงเวลาที่ต้องการตัด",
+  "preview_trim": "ดูตัวอย่างที่ตัด",
+  "reset_trim": "รีเซ็ต",
+  "trim_compress_btn": "ตัด + บีบอัด",
+  "compress_full_btn": "บีบอัดทั้งไฟล์ (ไม่ตัด)",
+  "preview_first": "กรุณากดดูตัวอย่างก่อน",
+  "generating_preview": "กำลังสร้างตัวอย่าง...",
+  "preview_ready": "ตัวอย่างพร้อมแล้ว กดตัด + บีบอัดเมื่อพอใจ",
+  "player_not_found": "ไม่พบ mpv player (ติดตั้งจาก mpv.io)",
+  "trim_preview_failed": "การสร้างตัวอย่างล้มเหลว",
+  "range_too_short": "ช่วงเวลาสั้นเกินไป (ขั้นต่ำ 1 วินาที)"
 }
