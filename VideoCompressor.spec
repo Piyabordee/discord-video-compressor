@@ -20,22 +20,34 @@ pyqt5_modules = [
 
 # Collect data files
 datas = [
-    ('config.py', '.'),
-    ('widgets.py', '.'),
-    ('bin', 'bin'),
+    ('i18n', 'i18n'),  # Translation files
 ]
 
-# Collect binaries (FFmpeg - user must provide)
+# Collect MPV DLLs from binaries directory
 binaries = []
+binaries_dir = 'binaries'
+if os.path.exists(binaries_dir):
+    for file in os.listdir(binaries_dir):
+        if file.endswith('.dll'):
+            binaries.append((os.path.join(binaries_dir, file), '.'))
+
+# Collect FFmpeg binaries if they exist
+for ffmpeg_file in ['ffmpeg.exe', 'ffprobe.exe']:
+    if os.path.exists(ffmpeg_file):
+        binaries.append((ffmpeg_file, '.'))
 
 a = Analysis(
-    ['main.py'],  # Main entry point
+    ['main.pyw'],  # Main entry point (note: .pyw extension)
     pathex=[],
     binaries=binaries,
     datas=datas,
     hiddenimports=pyqt5_modules + [
         'PyQt5.sip',
-        'configparsebetter',
+        'mpv',  # MPV player wrapper
+        'core.video_player',
+        'core.trim_compressor',
+        'core.compressor',
+        'widgets.timeline_slider',
     ],
     hookspath=[],
     hooksconfig={},
@@ -48,6 +60,9 @@ a = Analysis(
         'pandas',
         'scipy',
         'PIL',
+        'pytest',
+        'setuptools',
+        'distutils',
     ],
     noarchive=False,
     optimize=0,
@@ -69,7 +84,7 @@ exe = EXE(
     upx=True,
     upx_exclude=[],
     runtime_tmpdir=None,
-    console=False,  # GUI application, no console
+    console=False,  # GUI application, no console (set to True for debugging)
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,

@@ -55,6 +55,12 @@ class VideoPlayerWidget(QWidget):
 
     def setup_mpv(self):
         try:
+            # Add binaries directory to PATH for bundled DLLs
+            binaries_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'binaries')
+            if os.path.exists(binaries_dir):
+                os.environ["PATH"] = binaries_dir + os.pathsep + os.environ.get("PATH", "")
+                print(f"[DEBUG] Added to PATH: {binaries_dir}")
+
             from mpv import MPV
             # For embedding in PyQt widget on Windows
             if sys.platform == 'win32':
@@ -74,7 +80,7 @@ class VideoPlayerWidget(QWidget):
             print(f"[DEBUG] MPV initialization failed: {error_msg}")
             # Show user-friendly message
             if "Cannot find mpv" in error_msg or "mpv-1.dll" in error_msg or "mpv-2.dll" in error_msg:
-                self.time_label.setText("MPV not installed - Download from mpv.io")
+                self.time_label.setText("MPV DLLs not found - See binaries/README.md")
             else:
                 self.time_label.setText(f"MPV Error: {error_msg}")
             self.mpv_available = False
