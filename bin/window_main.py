@@ -19,6 +19,9 @@ from i18n import t
 import constants
 import time
 
+# Constants
+TEMP_FILE_AGE_SECONDS = 3600  # 1 hour
+
 
 class MainWindow(QMainWindow):
     """Main application window"""
@@ -257,6 +260,14 @@ class MainWindow(QMainWindow):
 
     def on_compression_complete(self, output_path: str, size_mb: float):
         """Called when compression completes successfully"""
+        # Clean up temp file if this was a trim compress operation
+        if self.current_temp_file and os.path.exists(self.current_temp_file):
+            try:
+                os.remove(self.current_temp_file)
+            except Exception:
+                pass
+            self.current_temp_file = None
+
         self.btn_trim_compress.setEnabled(True)
         self.btn_compress_full.setEnabled(True)
         self.progress_bar.setValue(100)
@@ -334,7 +345,6 @@ class MainWindow(QMainWindow):
             self.current_tracker.progress_updated.connect(self.on_progress_updated)
             self.current_tracker.compression_complete.connect(self.on_compression_complete)
             self.current_tracker.compression_error.connect(self.on_compression_error)
-            self.current_tracker.finished.connect(self.on_compression_finished)
             self.current_tracker.start()
 
             self.btn_trim_compress.setEnabled(False)
@@ -361,22 +371,17 @@ class MainWindow(QMainWindow):
         # Call original on_compress_clicked logic
         self.on_compress_clicked()
 
-    def on_compression_finished(self):
-        """Clean up temp file after compression"""
-        if self.current_temp_file and os.path.exists(self.current_temp_file):
-            try:
-                os.remove(self.current_temp_file)
-            except:
-                pass
-        self.current_temp_file = None
-
     def closeEvent(self, event):
         """Clean up on window close"""
+        # Clean up video player
+        if hasattr(self, 'video_player'):
+            self.video_player.cleanup()
+
         # Clean up temp file
         if self.current_temp_file and os.path.exists(self.current_temp_file):
             try:
                 os.remove(self.current_temp_file)
-            except:
+            except Exception:
                 pass
 
         # Clean up old temp files
@@ -396,10 +401,10 @@ class MainWindow(QMainWindow):
             if filename.startswith("trim_preview_"):
                 filepath = os.path.join(temp_dir, filename)
                 try:
-                    # Delete if older than 1 hour
-                    if now - os.path.getmtime(filepath) > 3600:
+                    # Delete if older than TEMP_FILE_AGE_SECONDS
+                    if now - os.path.getmtime(filepath) > TEMP_FILE_AGE_SECONDS:
                         os.remove(filepath)
-                except:
+                except Exception:
                     pass
 
     def apply_settings(self):
