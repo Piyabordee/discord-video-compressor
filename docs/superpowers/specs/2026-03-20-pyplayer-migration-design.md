@@ -128,10 +128,12 @@ class Compressor:
         return max(v_kbps, MIN_VIDEO_BITRATE_KBPS)
 
     def get_duration(self, input_file):
-        """Get video duration using ffprobe"""
-        cmd = f'{self.ffprobe_path} -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "{input_file}"'
-        # Parse output to float
-        pass
+        """Get video duration using ffprobe (from app.py lines 32-37)"""
+        cmd = [self.ffprobe_path, '-v', 'error', '-show_entries', 'format=duration',
+               '-of', 'default=noprint_wrappers=1:nokey=1', input_file]
+        r = subprocess.run(cmd, capture_output=True, text=True, check=True,
+                           creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0)
+        return float(r.stdout.strip())
 
     def compress(self, input_file, output_file, settings) -> Edit:
         """Start compression, returns Edit object for tracking"""
@@ -401,26 +403,6 @@ class MainWindow(QMainWindow):
         self.btn_compress.setEnabled(True)
         self.status_bar.showMessage(t('status_error'))
         QMessageBox.critical(self, t('error'), error_msg)
-```
-
-### MainWindow Class (bin/window_main.py)
-
-**NEW** - Main UI window.
-
-```python
-class MainWindow(QMainWindow):
-    """Main application window"""
-
-    def __init__(self):
-        self.setup_ui()
-        self.compressor = Compressor(...)
-
-    def on_compress_clicked(self):
-        """Handle compress button click"""
-        # 1. Validate input
-        # 2. Calculate bitrate
-        # 3. Start FFmpeg (async)
-        # 4. Show progress
 ```
 
 ### I18n Class (i18n/__init__.py)
