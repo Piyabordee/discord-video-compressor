@@ -5,6 +5,9 @@ PyQt5>=5.15.0
 # File type detection for video files
 filetype>=0.11.0
 
+# Video playback and preview (libmpv wrapper)
+python-mpv>=1.0.0
+
 # Build tools (optional, for creating executable)
 pyinstaller==6.15.0
 
