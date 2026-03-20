@@ -10,11 +10,15 @@
 
 Add video player with play/pause/seek controls and timeline-based trim functionality to the Discord Video Compressor. Users can preview videos, select start/end points using sliders, and compress only the selected range.
 
+**Architecture Context:**
+This feature ADDS to the existing PyQt5 version (main.pyw, bin/window_main.py), NOT the original Tkinter app.py. The PyQt5 migration was completed in a previous effort (see: docs/superpowers/specs/2026-03-20-pyplayer-migration-design.md). The original `app.py` (Tkinter) remains as reference and can be deprecated.
+
 **Key Requirements:**
 - Full video player (play/pause/seek) like PyPlayer
 - Timeline slider to select start/end range
 - Preview trimmed version before compressing
 - Two-pass workflow: trim first, then compress
+- Graceful degradation if mpv not installed (compress-only mode)
 
 ---
 
@@ -378,34 +382,42 @@ class TrimCompressor(Compressor):
             raise ValueError("Range too short (minimum 1 second)")
 
         # Check disk space
+        import shutil
         input_size = os.path.getsize(input_file)
         required_space = input_size * 1.5
-        available_space = os.stat(constants.PROBE_DIR).st_freespace if hasattr(os.stat(constants.PROBE_DIR), 'st_freespace') else required_space + 1
+        available_space = shutil.disk_usage(constants.PROBE_DIR).free
 
         if available_space < required_space:
             raise IOError("Insufficient disk space for trim preview")
 
-        # Generate temp filename
+        # Generate temp filename (with UUID to avoid collisions)
         import time
+        import uuid
         base_name = os.path.basename(input_file)
         name, ext = os.path.splitext(base_name)
         timestamp = int(time.time())
-        temp_name = f"trim_preview_{name}_{timestamp}{ext}"
+        unique_id = uuid.uuid4().hex[:8]
+        temp_name = f"trim_preview_{name}_{timestamp}_{unique_id}{ext}"
         temp_path = os.path.join(constants.PROBE_DIR, temp_name)
 
         # Build FFmpeg trim command (fast, no re-encode)
+        # Note: Using string format compatible with util.ffmpeg_async()
         duration = end_sec - start_sec
         cmd = (
-            f'-ss {start_sec} -i "{input_file}" '
+            f'-ss {start_sec} -i {input_file} '
             f'-t {duration} '
             f'-c copy '  # Copy streams, no re-encoding
             f'-avoid_negative_ts 1 '
-            f'-y "{temp_path}"'
+            f'-y {temp_path}'
         )
 
-        # Execute trim
-        from util import ffmpeg
-        ffmpeg(cmd)
+        # Execute trim asynchronously (for progress tracking)
+        from util import ffmpeg_async
+        edit = ffmpeg_async(cmd, priority=2)
+        edit.process.wait()  # Wait for completion (synchronous for now)
+
+        if edit.process.returncode != 0:
+            raise RuntimeError("Trim preview failed")
 
         return temp_path
 
@@ -735,6 +747,106 @@ def cleanup_temp_files(self):
 
 ---
 
+## CLI Mode Considerations
+
+**Scope:** Trim functionality is GUI-only in this implementation.
+
+**CLI Mode Behavior:**
+- CLI mode (`python main.pyw video.mp4`) will compress the FULL video
+- No trim support in CLI mode (too complex for command-line interface)
+- CLI mode remains unchanged from original implementation
+
+**Future Enhancement:**
+- Could add `--start` and `--end` arguments for CLI trim
+- Example: `python main.pyw video.mp4 --start 10 --end 30`
+
+---
+
+## Codec & Format Validation
+
+**Stream Copy Limitation:**
+The trim preview uses `-c copy` (stream copy) which has limitations:
+- Only works if the source container supports the operation
+- Most MP4/MKV files work fine
+- Some exotic formats may fail
+
+**Validation Strategy:**
+```python
+def validate_video_format(self, input_file: str) -> bool:
+    """Check if video format supports stream copy trim"""
+    # Probe video format
+    cmd = f'{self.ffprobe_path} -v error -select_streams v:0 -show_entries stream=codec_name -of json "{input_file}"'
+    # If codec_name is h264/hevc/etc, usually compatible
+    # Return True for compatible formats, False otherwise
+    return True  # Simplified for now
+```
+
+**Fallback if Stream Copy Fails:**
+If `-c copy` fails:
+- Show warning: "Stream copy not supported, will re-encode (slower)"
+- Retry with `-c:v libx264 -preset ultrafast` for compatibility
+- Adds processing time but ensures trim works
+
+---
+
+## Timeline Slider UX Improvements
+
+**Current Design (Two Separate Sliders):**
+The current design uses two QSlider widgets. This works but has UX limitations.
+
+**Recommended Improvements (Future Enhancement):**
+
+| Option | Description | Effort |
+|--------|-------------|--------|
+| **A)** Visual highlight | Add colored background between sliders to show selected range | Low |
+| **B)** Custom widget | Create custom QWidget with paintEvent() drawing two handles on one bar | Medium |
+| **C)** External library | Use `qt-range-slider` or similar library | Low |
+
+**For Initial Implementation:**
+Use two QSlider widgets (current design) with:
+- Visual labels showing start/end times
+- Duration label showing selected range length
+- Auto-adjustment preventing invalid ranges
+
+---
+
+## Temp File Cleanup Strategy
+
+**Cleanup Triggers:**
+1. **On successful compression** - Delete temp file immediately
+2. **On window close** - Delete current temp file
+3. **On application startup** - Remove temp files older than 1 hour
+4. **On unexpected exit** - Use `atexit` module
+
+**atexit Registration:**
+```python
+import atexit
+
+class TrimCompressor:
+    def __init__(self, ...):
+        self.temp_files = []
+        atexit.register(self.cleanup_all_temp_files)
+
+    def cleanup_all_temp_files(self):
+        """Clean up all temp files on exit"""
+        for temp_file in self.temp_files:
+            try:
+                if os.path.exists(temp_file):
+                    os.remove(temp_file)
+            except:
+                pass
+
+    def trim_preview(self, input_file, start_sec, end_sec):
+        temp_path = self.generate_temp_path(input_file)
+        self.temp_files.append(temp_path)
+        # ... trim logic ...
+        # Remove from tracking after successful compression
+        self.temp_files.remove(temp_path)
+        return temp_path
+```
+
+---
+
 ## Dependencies
 
 ### New Dependencies
@@ -745,10 +857,41 @@ pip install python-mpv
 
 ### External Requirements
 
-- **mpv player** - Must be installed separately (https://mpv.io)
-- Windows: Download .exe from mpv.io
-- Linux: `sudo apt install mpv`
+- **mpv player** - Required for video preview functionality
+
+**Installation Options:**
+
+| Option | Description |
+|--------|-------------|
+| **Manual install** | User downloads mpv from mpv.io separately |
+| **Bundle with installer** | Include mpv.exe with ffmpeg.exe in Inno Setup installer |
+| **Auto-download** | Detect missing mpv and offer to download (future enhancement) |
+
+**Installation by Platform:**
+- Windows: Download mpv-x.x.0-x86_64.7z from mpv.io, extract mpv.exe to app directory
+- Linux: `sudo apt install mpv` or `sudo pacman -S mpv`
 - macOS: `brew install mpv`
+
+**Graceful Degradation:**
+If mpv is not installed:
+- Hide video player widget
+- Show message: "Video preview requires mpv player (mpv.io)"
+- Disable trim controls
+- Enable "Compress Full" button only
+- User can still compress without trim
+
+### Distribution Strategy (PyInstaller)
+
+For standalone executable distribution:
+1. **Option A (Recommended):** Bundle mpv.exe with ffmpeg.exe
+   - Add mpv.exe to PyInstaller spec datas
+   - Include in Inno Setup installer
+   - ~50 MB additional size
+
+2. **Option B:** External dependency
+   - Document mpv requirement in README
+   - Show helpful error message with download link
+   - Smaller installer size
 
 ### Updated Requirements.txt
 
@@ -757,6 +900,17 @@ PyQt5>=5.15.0
 filetype>=0.11.0
 python-mpv>=1.0.0
 pyinstaller==6.15.0
+```
+
+### Updated PyInstaller Spec
+
+Add to datas in VideoCompressor.spec:
+```python
+datas=[
+    ('themes', 'themes'),
+    ('i18n', 'i18n'),
+    ('mpv.exe', '.'),  # If bundling mpv
+]
 ```
 
 ---
