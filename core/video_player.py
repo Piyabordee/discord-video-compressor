@@ -68,8 +68,15 @@ class VideoPlayerWidget(QWidget):
             self.player.observe_property('time-pos', self.on_position_changed)
             self.player.observe_property('duration', self.on_duration_changed)
             self.mpv_available = True
-        except (ImportError, ModuleNotFoundError) as e:
-            self.time_label.setText(f"MPV Error: {str(e)}")
+            print("[DEBUG] MPV player initialized successfully")
+        except (ImportError, ModuleNotFoundError, OSError) as e:
+            error_msg = str(e)
+            print(f"[DEBUG] MPV initialization failed: {error_msg}")
+            # Show user-friendly message
+            if "Cannot find mpv" in error_msg or "mpv-1.dll" in error_msg or "mpv-2.dll" in error_msg:
+                self.time_label.setText("MPV not installed - Download from mpv.io")
+            else:
+                self.time_label.setText(f"MPV Error: {error_msg}")
             self.mpv_available = False
 
     def set_controls_enabled(self, enabled: bool):

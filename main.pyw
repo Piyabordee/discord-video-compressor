@@ -53,16 +53,23 @@ def cli_entry(input_file: str):
 
 def main():
     """GUI mode entry point"""
+    print("[DEBUG] Starting Discord Video Compressor...")
+    print(f"[DEBUG] Python version: {sys.version}")
+    print(f"[DEBUG] Platform: {sys.platform}")
+
     app = QApplication(sys.argv)
     app.setApplicationName("VideoCompressor")
     app.setOrganizationName("DiscordVideoCompressor")
 
     # Load language
     i18n.load('th')  # Default to Thai
+    print("[DEBUG] Language loaded: Thai")
 
     # Create and show main window
+    print("[DEBUG] Creating main window...")
     window = MainWindow()
     window.show()
+    print("[DEBUG] Main window shown, entering event loop...")
 
     sys.exit(app.exec_())
 

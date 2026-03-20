@@ -159,30 +159,40 @@ class MainWindow(QMainWindow):
         )
         if file_path:
             self.input_path.setText(file_path)
+            print(f"[DEBUG] File selected: {file_path}")
 
             # Load into video player
             try:
+                print(f"[DEBUG] Attempting to load video into player...")
                 self.video_player.load_file(file_path)
+                print(f"[DEBUG] Video loaded successfully")
 
                 # Check if player is available
                 if not self.video_player.is_available():
+                    print(f"[DEBUG] MPV player not available, disabling trim controls")
                     self.status_bar.showMessage(t('player_not_found'))
                     # Disable trim controls
                     self.btn_preview_trim.setEnabled(False)
                     self.btn_reset_trim.setEnabled(False)
                 else:
+                    print(f"[DEBUG] MPV player available, setting up timeline...")
                     # Get duration and set up timeline
                     duration = self.compressor.get_duration(file_path)
+                    print(f"[DEBUG] Video duration: {duration:.2f} seconds")
                     self.timeline.set_duration(duration)
 
                     # Enable trim controls
                     self.btn_preview_trim.setEnabled(True)
                     self.btn_reset_trim.setEnabled(True)
+                    print(f"[DEBUG] Trim controls enabled")
 
                 # Enable compress full button
                 self.btn_compress_full.setEnabled(True)
 
             except Exception as e:
+                print(f"[DEBUG] Error loading video: {type(e).__name__}: {e}")
+                import traceback
+                traceback.print_exc()
                 QMessageBox.warning(self, t('error'), f"Cannot load video: {e}")
 
             # Auto-generate output path
