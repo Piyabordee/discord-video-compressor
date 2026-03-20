@@ -19,11 +19,11 @@ class TrimCompressor(Compressor):
 
     def cleanup_all_temp_files(self):
         """Clean up all temp files on exit"""
-        for temp_file in self.temp_files:
+        for temp_file in list(self.temp_files):
             try:
                 if os.path.exists(temp_file):
                     os.remove(temp_file)
-            except:
+            except (OSError, PermissionError):
                 pass
 
     def trim_preview(self, input_file: str, start_sec: float, end_sec: float) -> str:
@@ -95,11 +95,24 @@ class TrimCompressor(Compressor):
         Returns:
             Edit object for tracking
         """
+        # Validate settings
+        required_keys = ['target_mb', 'audio_kbps', 'preset']
+        for key in required_keys:
+            if key not in settings:
+                raise ValueError(f"Missing required setting: {key}")
+
         # Use parent class compress method
-        result = super().compress(trimmed_file, output_file, settings)
-
-        # Remove from temp tracking after successful compress
-        if trimmed_file in self.temp_files:
-            self.temp_files.remove(trimmed_file)
-
-        return result
+        try:
+            result = super().compress(trimmed_file, output_file, settings)
+            # Remove from temp tracking after successful compress
+            if trimmed_file in self.temp_files:
+                self.temp_files.remove(trimmed_file)
+            return result
+        except Exception as e:
+            # Clean up temp file on failure
+            if trimmed_file in self.temp_files and os.path.exists(trimmed_file):
+                try:
+                    os.remove(trimmed_file)
+                except (OSError, PermissionError):
+                    pass
+            raise
