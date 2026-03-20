@@ -3,6 +3,7 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel
 from PyQt5.QtCore import Qt, pyqtSignal
 import os
+import sys
 
 
 class VideoPlayerWidget(QWidget):
@@ -25,7 +26,7 @@ class VideoPlayerWidget(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
 
         # Video container (mpv will embed here)
-        self.video_container = QWidget()
+        self.video_container = QWidget(self)
         self.video_container.setMinimumHeight(300)
         self.video_container.setStyleSheet("background: black;")
         layout.addWidget(self.video_container)
@@ -55,14 +56,19 @@ class VideoPlayerWidget(QWidget):
     def setup_mpv(self):
         try:
             from mpv import MPV
-            self.player = MPV(
-                ytdl=False,
-                vo='sdl',  # Use SDL on Windows
-            )
+            # For embedding in PyQt widget on Windows
+            if sys.platform == 'win32':
+                self.player = MPV(
+                    ytdl=False,
+                    vo='sdl',
+                    wid=str(int(self.video_container.winId()))
+                )
+            else:
+                self.player = MPV(ytdl=False, vo='sdl')
             self.player.observe_property('time-pos', self.on_position_changed)
             self.player.observe_property('duration', self.on_duration_changed)
             self.mpv_available = True
-        except Exception as e:
+        except (ImportError, ModuleNotFoundError) as e:
             self.time_label.setText(f"MPV Error: {str(e)}")
             self.mpv_available = False
 
@@ -125,3 +131,16 @@ class VideoPlayerWidget(QWidget):
     def is_available(self) -> bool:
         """Check if mpv player is available"""
         return self.mpv_available
+
+    def cleanup(self):
+        """Clean up MPV player resources"""
+        if self.player and self.mpv_available:
+            try:
+                self.player.terminate()
+            except:
+                pass
+
+    def closeEvent(self, event):
+        """Handle widget close"""
+        self.cleanup()
+        super().closeEvent(event)
