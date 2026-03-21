@@ -5,6 +5,9 @@ import subprocess
 from typing import Dict, Tuple
 import constants
 
+# Windows: hide console window
+CREATE_NO_WINDOW = subprocess.CREATE_NO_WINDOW if constants.IS_WINDOWS else 0
+
 
 class Compressor:
     """Manages video compression operations"""
@@ -26,7 +29,7 @@ class Compressor:
             capture_output=True,
             text=True,
             check=True,
-            creationflags=constants.STARTUPINFO if constants.IS_WINDOWS else 0
+            creationflags=CREATE_NO_WINDOW
         )
         return float(r.stdout.strip())
 
@@ -49,6 +52,7 @@ class Compressor:
         """Start compression, returns Edit object for tracking"""
         # Import here to avoid circular dependency
         from util import ffmpeg_async
+        from core.edit import Edit
 
         # Validate input file exists
         if not os.path.exists(input_file):
@@ -74,10 +78,10 @@ class Compressor:
             f'"{output_file}"'
         )
 
-        # Use ffmpeg_async from PyPlayer (returns Edit object)
-        edit = ffmpeg_async(cmd, priority=2)
+        # Create Edit object and run FFmpeg process
+        edit = Edit(dest=output_file)
         edit.duration = duration
-        edit.dest = output_file
         edit.v_kbps = v_kbps
+        edit.process = ffmpeg_async(cmd, priority=2)
 
         return edit

@@ -1,15 +1,15 @@
 """FFmpeg progress tracking thread"""
 
 import re
-from PyQt5.QtCore import QThread, pyqtSignal
+from PySide6.QtCore import QThread, Signal
 
 
 class ProgressTracker(QThread):
     """Tracks FFmpeg progress and emits update signals"""
 
-    progress_updated = pyqtSignal(float)  # percent (0-100)
-    compression_complete = pyqtSignal(str, float)  # output_path, size_mb
-    compression_error = pyqtSignal(str)  # error_message
+    progress_updated = Signal(float)  # percent (0-100)
+    compression_complete = Signal(str, float)  # output_path, size_mb
+    compression_error = Signal(str)  # error_message
 
     def __init__(self, edit: 'Edit'):
         super().__init__()

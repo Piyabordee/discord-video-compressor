@@ -1,13 +1,13 @@
 """Main window UI for Discord Video Compressor"""
 
 import os
-from PyQt5.QtWidgets import (
+from PySide6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,
     QLabel, QLineEdit, QPushButton, QProgressBar, QStatusBar,
     QDoubleSpinBox, QFileDialog, QMessageBox
 )
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QDoubleValidator
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QDoubleValidator
 
 from core.compressor import Compressor
 from core.video_player import VideoPlayerWidget
@@ -32,6 +32,10 @@ class MainWindow(QMainWindow):
         self.current_edit: Edit = None
         self.current_temp_file = None
 
+        # Trim points (in seconds)
+        self.trim_start = None
+        self.trim_end = None
+
         # Initialize compressor (check FFmpeg availability)
         if not constants.FFMPEG_PATH or not constants.FFPROBE_PATH:
             QMessageBox.critical(None, t('error'), t('error_no_ffmpeg'))
@@ -43,6 +47,13 @@ class MainWindow(QMainWindow):
         # Add new components
         self.video_player = VideoPlayerWidget()
         self.timeline = TimelineSlider()
+
+        # Connect video player signals
+        self.video_player.position_changed.connect(self.on_player_position_changed)
+        self.video_player.duration_changed.connect(self.on_player_duration_changed)
+        self.video_player.clicked.connect(self.browse_input)  # Click to select file
+        self.video_player.trim_start_changed.connect(self.on_trim_start_dragged)
+        self.video_player.trim_end_changed.connect(self.on_trim_end_dragged)
 
         self.setup_ui()
         self.apply_settings()
@@ -63,22 +74,41 @@ class MainWindow(QMainWindow):
         layout.addWidget(QLabel(t('video_preview')))
         layout.addWidget(self.video_player)
 
-        # Timeline Section
-        layout.addWidget(QLabel(t('trim_range')))
+        # Timeline Section - Video Editor Style
+        layout.addWidget(QLabel("Timeline / Seek"))
         layout.addWidget(self.timeline)
 
-        # Trim Controls
-        trim_layout = QHBoxLayout()
-        self.btn_preview_trim = QPushButton(t('preview_trim'))
-        self.btn_reset_trim = QPushButton(t('reset_trim'))
-        self.btn_preview_trim.clicked.connect(self.on_preview_trim_clicked)
+        # Trim Mark Controls (Set In/Out points)
+        trim_mark_layout = QHBoxLayout()
+        self.btn_set_start = QPushButton("ตั้งจุดเริ่ม [")  # Set Start
+        self.btn_set_end = QPushButton("ตั้งจุดสิ้นสุด ]")  # Set End
+        self.btn_reset_trim = QPushButton("รีเซ็ต")  # Reset
+        self.btn_preview_trim = QPushButton("ดูตัวอย่างที่ตัด")  # Preview Trim
+
+        self.btn_set_start.setStyleSheet("font-weight: bold; padding: 5px 15px;")
+        self.btn_set_end.setStyleSheet("font-weight: bold; padding: 5px 15px;")
+
+        self.btn_set_start.clicked.connect(self.on_set_start_clicked)
+        self.btn_set_end.clicked.connect(self.on_set_end_clicked)
         self.btn_reset_trim.clicked.connect(self.on_reset_trim_clicked)
-        self.btn_preview_trim.setEnabled(False)
+        self.btn_preview_trim.clicked.connect(self.on_preview_trim_clicked)
+
+        self.btn_set_start.setEnabled(False)
+        self.btn_set_end.setEnabled(False)
         self.btn_reset_trim.setEnabled(False)
-        trim_layout.addWidget(self.btn_preview_trim)
-        trim_layout.addWidget(self.btn_reset_trim)
-        trim_layout.addStretch()
-        layout.addLayout(trim_layout)
+        self.btn_preview_trim.setEnabled(False)
+
+        trim_mark_layout.addWidget(self.btn_set_start)
+        trim_mark_layout.addWidget(self.btn_set_end)
+        trim_mark_layout.addWidget(self.btn_reset_trim)
+        trim_mark_layout.addStretch()
+        trim_mark_layout.addWidget(self.btn_preview_trim)
+        layout.addLayout(trim_mark_layout)
+
+        # Trim Info Display
+        self.trim_info_label = QLabel("จุดเริ่ม: -- | จุดสิ้นสุด: -- | ความยาว: --")
+        self.trim_info_label.setStyleSheet("padding: 5px; background: #f0f0f0; border-radius: 3px;")
+        layout.addWidget(self.trim_info_label)
 
         # Separator
         line = QLabel("─" * 50)
@@ -167,26 +197,23 @@ class MainWindow(QMainWindow):
                 self.video_player.load_file(file_path)
                 print(f"[DEBUG] Video loaded successfully")
 
-                # Check if player is available
-                if not self.video_player.is_available():
-                    print(f"[DEBUG] MPV player not available, disabling trim controls")
-                    self.status_bar.showMessage(t('player_not_found'))
-                    # Disable trim controls
-                    self.btn_preview_trim.setEnabled(False)
-                    self.btn_reset_trim.setEnabled(False)
-                else:
-                    print(f"[DEBUG] MPV player available, setting up timeline...")
-                    # Get duration and set up timeline
-                    duration = self.compressor.get_duration(file_path)
-                    print(f"[DEBUG] Video duration: {duration:.2f} seconds")
-                    self.timeline.set_duration(duration)
+                # Get duration from player
+                duration = self.video_player.duration
+                print(f"[DEBUG] Video duration: {duration:.2f} seconds")
+                self.timeline.set_duration(duration)
 
-                    # Enable trim controls
-                    self.btn_preview_trim.setEnabled(True)
-                    self.btn_reset_trim.setEnabled(True)
-                    print(f"[DEBUG] Trim controls enabled")
+                # Reset trim points
+                self.trim_start = None
+                self.trim_end = None
 
-                # Enable compress full button
+                # Enable trim controls
+                self.btn_set_start.setEnabled(True)
+                self.btn_set_end.setEnabled(True)
+                self.btn_reset_trim.setEnabled(True)
+                self.update_trim_info()
+                print(f"[DEBUG] Trim controls enabled")
+
+                # Enable compress buttons
                 self.btn_compress_full.setEnabled(True)
 
             except Exception as e:
@@ -295,10 +322,103 @@ class MainWindow(QMainWindow):
         self.status_bar.showMessage(t('status_error'))
         QMessageBox.critical(self, t('error'), error_msg)
 
+    def on_set_start_clicked(self):
+        """Set trim start point at current position"""
+        current_pos = self.video_player.current_position
+        self.trim_start = current_pos
+
+        # If end is set and before start, clear it
+        if self.trim_end is not None and self.trim_end <= current_pos:
+            self.trim_end = None
+
+        self.update_trim_info()
+        self.update_timeline_from_trim_points()
+
+    def on_set_end_clicked(self):
+        """Set trim end point at current position"""
+        current_pos = self.video_player.current_position
+        self.trim_end = current_pos
+
+        # If start is set and after end, clear it
+        if self.trim_start is not None and self.trim_start >= current_pos:
+            self.trim_start = None
+
+        self.update_trim_info()
+        self.update_timeline_from_trim_points()
+
+    def on_trim_start_dragged(self, position: float):
+        """Handle trim start handle dragged on seek bar"""
+        self.trim_start = position
+
+        # If end is set and before start, clear it
+        if self.trim_end is not None and self.trim_end <= position:
+            self.trim_end = None
+
+        self.update_trim_info()
+        self.update_timeline_from_trim_points()
+
+    def on_trim_end_dragged(self, position: float):
+        """Handle trim end handle dragged on seek bar"""
+        self.trim_end = position
+
+        # If start is set and after end, clear it
+        if self.trim_start is not None and self.trim_start >= position:
+            self.trim_start = None
+
+        self.update_trim_info()
+        self.update_timeline_from_trim_points()
+
+    def update_trim_info(self):
+        """Update the trim info label"""
+        if self.trim_start is not None and self.trim_end is not None:
+            duration = self.trim_end - self.trim_start
+            self.trim_info_label.setText(
+                f"จุดเริ่ม: {self.format_time(self.trim_start)} | "
+                f"จุดสิ้นสุด: {self.format_time(self.trim_end)} | "
+                f"ความยาว: {self.format_time(duration)}"
+            )
+            self.btn_preview_trim.setEnabled(True)
+            self.btn_trim_compress.setEnabled(True)
+        elif self.trim_start is not None:
+            self.trim_info_label.setText(
+                f"จุดเริ่ม: {self.format_time(self.trim_start)} | "
+                f"จุดสิ้นสุด: -- (เลื่อนไปตั้งจุดสิ้นสุด)"
+            )
+        elif self.trim_end is not None:
+            self.trim_info_label.setText(
+                f"จุดเริ่ม: -- (เลื่อนไปตั้งจุดเริ่ม) | "
+                f"จุดสิ้นสุด: {self.format_time(self.trim_end)}"
+            )
+        else:
+            self.trim_info_label.setText("จุดเริ่ม: -- | จุดสิ้นสุด: -- | ความยาว: --")
+            self.btn_preview_trim.setEnabled(False)
+            self.btn_trim_compress.setEnabled(False)
+
+    def update_timeline_from_trim_points(self):
+        """Update timeline visual to show trim points"""
+        if self.trim_start is not None and self.trim_end is not None:
+            self.timeline.set_range(self.trim_start, self.trim_end)
+            # Also update video player's seek bar
+            self.video_player.set_trim_range(self.trim_start, self.trim_end)
+        else:
+            # Clear trim markers if not both set
+            self.video_player.clear_trim()
+
+    def format_time(self, seconds: float) -> str:
+        """Format seconds to HH:MM:SS"""
+        h = int(seconds // 3600)
+        m = int((seconds % 3600) // 60)
+        s = int(seconds % 60)
+        return f"{h:02d}:{m:02d}:{s:02d}"
+
     def on_preview_trim_clicked(self):
         """Generate trimmed preview"""
         try:
-            start, end = self.timeline.get_range()
+            if self.trim_start is None or self.trim_end is None:
+                QMessageBox.warning(self, "แจ้งเตือน", "กรุณาตั้งจุดเริ่มและจุดสิ้นสุดก่อนดูตัวอย่าง")
+                return
+
+            start, end = self.trim_start, self.trim_end
 
             self.status_bar.showMessage(t('generating_preview'))
             self.btn_preview_trim.setEnabled(False)
@@ -320,23 +440,35 @@ class MainWindow(QMainWindow):
             self.btn_preview_trim.setEnabled(True)
 
     def on_reset_trim_clicked(self):
-        """Reset timeline to full range"""
+        """Reset trim points and timeline"""
+        self.trim_start = None
+        self.trim_end = None
+        self.current_temp_file = None
+
         if self.video_player.duration > 0:
             self.timeline.reset()
+            self.video_player.clear_trim()  # Clear trim markers on seek bar
+            self.update_trim_info()
             # Reload original file
             self.video_player.load_file(self.input_path.text())
             self.btn_trim_compress.setEnabled(False)
-            self.current_temp_file = None
 
     def on_trim_compress_clicked(self):
         """Compress the trimmed video"""
-        if not self.current_temp_file or not os.path.exists(self.current_temp_file):
-            QMessageBox.warning(self, t('error'), t('preview_first'))
+        # Check if trim points are set
+        if self.trim_start is None or self.trim_end is None:
+            QMessageBox.warning(self, "แจ้งเตือน", "กรุณาตั้งจุดเริ่มและจุดสิ้นสุดก่อนบีบอัด")
             return
 
+        input_file = self.input_path.text()
         output_file = self.output_path.text()
-        if not output_file:
+
+        if not input_file or not output_file:
             QMessageBox.warning(self, t('error'), t('error_incomplete'))
+            return
+
+        if not os.path.exists(input_file):
+            QMessageBox.warning(self, t('error'), t('error_invalid_file'))
             return
 
         try:
@@ -346,8 +478,9 @@ class MainWindow(QMainWindow):
                 'preset': 'medium'
             }
 
-            self.current_edit = self.compressor.compress_trimmed(
-                self.current_temp_file, output_file, settings
+            # Trim and compress directly (no preview required)
+            self.current_edit = self.compressor.trim_and_compress(
+                input_file, self.trim_start, self.trim_end, output_file, settings
             )
 
             # Start progress tracker
@@ -418,6 +551,57 @@ class MainWindow(QMainWindow):
                     pass
 
     def apply_settings(self):
-        """Apply initial settings (theme, language)"""
-        # Will be implemented in settings chunk
+        """Apply initial settings (theme, language, shortcuts)"""
+        # Setup keyboard shortcuts (video editor style)
+        from PySide6.QtGui import QKeySequence
+
+        # Set Start Point: [ key
+        self.set_start_shortcut = self.btn_set_start.shortcut()
+        self.btn_set_start.setShortcut(QKeySequence("["))
+        self.btn_set_start.setToolTip("ตั้งจุดเริ่ม [")
+
+        # Set End Point: ] key
+        self.btn_set_end.setShortcut(QKeySequence("]"))
+        self.btn_set_end.setToolTip("ตั้งจุดสิ้นสุด ]")
+
+        # Reset: Escape key
+        self.btn_reset_trim.setShortcut(QKeySequence("Escape"))
+        self.btn_reset_trim.setToolTip("รีเซ็ต (Escape)")
+
+        # Preview: P key
+        self.btn_preview_trim.setShortcut(QKeySequence("P"))
+        self.btn_preview_trim.setToolTip("ดูตัวอย่าง (P)")
+
+        print("[DEBUG] Keyboard shortcuts setup complete")
+
+    def on_player_position_changed(self, position: float):
+        """Handle video player position change"""
+        # Could update timeline visual here
         pass
+
+    def on_player_duration_changed(self, duration: float):
+        """Handle video player duration change"""
+        print(f"[DEBUG] Duration changed: {duration}s")
+        self.timeline.set_duration(duration)
+
+    def keyPressEvent(self, event):
+        """Handle keyboard shortcuts for video editing"""
+        from PySide6.QtCore import Qt
+
+        # Arrow keys for seeking (like video editors)
+        if event.key() == Qt.Key_Left:
+            # Seek backward 5 seconds
+            if self.video_player.duration > 0:
+                new_pos = max(0, self.video_player.current_position - 5)
+                self.video_player.seek(new_pos)
+        elif event.key() == Qt.Key_Right:
+            # Seek forward 5 seconds
+            if self.video_player.duration > 0:
+                new_pos = min(self.video_player.duration, self.video_player.current_position + 5)
+                self.video_player.seek(new_pos)
+        elif event.key() == Qt.Key_Space:
+            # Play/Pause toggle (opens external player)
+            self.video_player.play()
+        else:
+            # Pass other keys to parent
+            super().keyPressEvent(event)

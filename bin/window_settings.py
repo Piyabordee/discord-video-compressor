@@ -5,7 +5,7 @@ Settings dialog for Video Compressor
 Adapted from PyPlayer window_settings.py
 """
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets
 import os
 import config
 

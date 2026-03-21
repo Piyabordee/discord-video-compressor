@@ -7,10 +7,10 @@
 
 from __future__ import annotations
 
-from PyQt5 import QtCore, QtGui
-from PyQt5 import QtWidgets as QtW
-from PyQt5.QtWidgets import QMessageBox, QFileDialog
-from PyQt5.QtCore import Qt
+from PySide6 import QtCore, QtGui
+from PySide6 import QtWidgets as QtW
+from PySide6.QtWidgets import QMessageBox, QFileDialog
+from PySide6.QtCore import Qt
 import os
 import logging
 import platform

@@ -56,3 +56,4 @@ Output/
 *.log
 
 pyplayer-master/
+.venv312/

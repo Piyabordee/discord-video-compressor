@@ -1,13 +1,13 @@
 """Timeline slider for selecting video trim range"""
 
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QSlider, QLabel
-from PyQt5.QtCore import Qt, pyqtSignal
+from PySide6.QtWidgets import QWidget, QHBoxLayout, QSlider, QLabel
+from PySide6.QtCore import Qt, Signal
 
 
 class TimelineSlider(QWidget):
     """Double slider for selecting start/end range"""
 
-    range_changed = pyqtSignal(float, float)  # start, end in seconds
+    range_changed = Signal(float, float)  # start, end in seconds
 
     def __init__(self):
         super().__init__()
@@ -103,6 +103,18 @@ class TimelineSlider(QWidget):
 
     def get_range(self) -> tuple:
         return self.start_pos, self.end_pos
+
+    def set_range(self, start: float, end: float):
+        """Set range programmatically"""
+        self.start_pos = start
+        self.end_pos = end
+        self.start_slider.blockSignals(True)
+        self.end_slider.blockSignals(True)
+        self.start_slider.setValue(int(start))
+        self.end_slider.setValue(int(end))
+        self.start_slider.blockSignals(False)
+        self.end_slider.blockSignals(False)
+        self.update_labels()
 
     def reset(self):
         """Reset to full range"""

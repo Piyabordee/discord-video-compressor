@@ -2,7 +2,7 @@
 
 import sys
 import os
-from PyQt5.QtWidgets import QApplication, QMessageBox
+from PySide6.QtWidgets import QApplication, QMessageBox
 from bin.window_main import MainWindow
 from i18n import i18n
 import constants
@@ -71,7 +71,7 @@ def main():
     window.show()
     print("[DEBUG] Main window shown, entering event loop...")
 
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
 
 
 if __name__ == '__main__':

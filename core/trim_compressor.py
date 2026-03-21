@@ -116,3 +116,24 @@ class TrimCompressor(Compressor):
                 except (OSError, PermissionError):
                     pass
             raise
+
+    def trim_and_compress(self, input_file: str, start_sec: float, end_sec: float,
+                         output_file: str, settings: dict):
+        """
+        One-pass trim and compress operation
+
+        Args:
+            input_file: Path to input video
+            start_sec: Start time in seconds
+            end_sec: End time in seconds
+            output_file: Path to final output file
+            settings: Compression settings dict
+
+        Returns:
+            Edit object for tracking
+        """
+        # First trim
+        trimmed_file = self.trim_preview(input_file, start_sec, end_sec)
+
+        # Then compress
+        return self.compress_trimmed(trimmed_file, output_file, settings)

@@ -3,8 +3,8 @@
 
     Video Compressor to ~9MB '''
 
-from PyQt5 import QtGui, QtCore
-from PyQt5 import QtWidgets as QtW
+from PySide6 import QtGui, QtCore
+from PySide6 import QtWidgets as QtW
 from bin.configparsebetter import ConfigParseBetterQt
 
 import time

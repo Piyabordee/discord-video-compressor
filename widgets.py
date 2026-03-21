@@ -9,9 +9,9 @@
 
 from __future__ import annotations
 
-from PyQt5 import QtGui, QtCore
-from PyQt5.QtCore import Qt
-from PyQt5 import QtWidgets as QtW
+from PySide6 import QtGui, QtCore
+from PySide6.QtCore import Qt
+from PySide6 import QtWidgets as QtW
 
 import os
 import logging
@@ -28,7 +28,7 @@ logger = logging.getLogger('widgets.py')
 class FileDropZone(QtW.QWidget):
     """A widget that accepts file drops for video compression."""
 
-    files_dropped = QtCore.pyqtSignal(list)  # Signal emitted when files are dropped
+    files_dropped = QtCore.Signal(list)  # Signal emitted when files are dropped
 
     def __init__(self, parent=None):
         super().__init__(parent)
