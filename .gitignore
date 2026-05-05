@@ -69,5 +69,15 @@ htmlcov/
 # -------------------------------
 shell_extension/staging/
 
+# -------------------------------
+# Certificates / Private Keys
+# -------------------------------
+*.pfx
+
+# -------------------------------
+# Built Executables
+# -------------------------------
+app.exe
+
 pyplayer-master/
 .venv312/

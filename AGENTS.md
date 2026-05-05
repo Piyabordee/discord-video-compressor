@@ -4,7 +4,7 @@
 >
 > **Project:** Video Compressor to ~9MB (Discord-Friendly)
 > **Version:** 1.0.0
-> **Last Updated:** 2026-03-15
+> **Last Updated:** 2026-05-05
 
 ---
 
@@ -32,7 +32,7 @@ Compress videos to approximately 8.2 MB to enable uploads to Discord (Free Tier 
 
 ### Three Usage Methods
 
-1. **Right-Click Context Menu** - Right-click on video file → "Compress to ~9MB"
+1. **Right-Click Context Menu (Windows 11 Modern)** - Right-click on .mp4 file → "Compress to ~9MB"
 2. **GUI Application** - Open app → Select file → Click compress
 3. **CLI Mode** - Drag file onto app.exe or run via command line
 
@@ -46,9 +46,11 @@ discord-video-compressor/
 ├── Requirements.txt                # Python dependencies
 ├── VideoCompressor9MB.spec         # PyInstaller spec file
 ├── setup_compress9mb.iss           # Inno Setup installer script
+├── shell_extension/                # Windows 11 modern context menu (MSIX + DLL)
 ├── .gitignore                      # Git ignore rules
 ├── LICENSE                         # MIT License
 ├── README.md                       # Documentation for end users
+├── shell_extension.md              # Shell extension documentation
 │
 ├── build/                          # PyInstaller build artifacts (not committed)
 ├── dist/                           # Compiled executable (not committed)
@@ -66,7 +68,9 @@ discord-video-compressor/
 | File | Description |
 |------|-------------|
 | `app.py` | Single-file application containing everything - 282 lines |
-| `setup_compress9mb.iss` | Script to create Windows Installer with context menu integration |
+| `setup_compress9mb.iss` | Script to create Windows Installer with modern context menu integration |
+| `shell_extension/` | MSIX package, DLL, and scripts for Windows 11 modern context menu |
+| `shell_extension.md` | Detailed architecture and build notes for the shell extension |
 | `VideoCompressor9MB.spec` | PyInstaller configuration for building exe |
 | `Requirements.txt` | `win10toast==0.9` (used in prototype, not in current version) |
 
@@ -661,7 +665,7 @@ C:\Test\VideoCompressor9MB.exe
 C:\Test\VideoCompressor9MB.exe "C:\Videos\test.mp4"
 
 # 4. Test context menu (if installed)
-# Right-click on video file → "Compress to ~9MB"
+# Right-click on .mp4 file → "Compress to ~9MB" (Windows 11 modern menu)
 ```
 
 ---
@@ -685,7 +689,7 @@ C:\Test\VideoCompressor9MB.exe "C:\Videos\test.mp4"
 - Copies files: `app.exe`, `ffmpeg.exe`, `ffprobe.exe` to `C:\Program Files\Compress to 9MB\`
 - Creates Desktop shortcut (if selected)
 - Creates Start Menu shortcut
-- Adds "Compress to ~9MB" to right-click context menu
+- Adds "Compress to ~9MB" to Windows 11 modern context menu for .mp4
 
 ---
 
@@ -1074,7 +1078,7 @@ Then check console output to see what FFmpeg is sending.
 
 **Causes:**
 1. Not installed with admin rights
-2. Registry keys not written
+2. MSIX package not installed
 3. Windows Defender blocked it
 
 **Solutions:**
@@ -1083,9 +1087,9 @@ Then check console output to see what FFmpeg is sending.
 |:-----|:-------|
 | 1 | Uninstall program (Control Panel) |
 | 2 | Run installer with **Run as Administrator** |
-| 3 | Select "Add context menu" during install |
+| 3 | Select "Add Windows 11 modern context menu (MP4)" during install |
 | 4 | Restart Windows Explorer: `taskkill /f /im explorer.exe && start explorer.exe` |
-| 5 | Check Registry: `regedit` → `HKEY_LOCAL_MACHINE\Software\Classes\*\shell\CompressTo9MB` |
+| 5 | Verify MSIX: `Get-AppxPackage -Name DiscordVideoCompressor.ShellExtension` |
 
 ---
 

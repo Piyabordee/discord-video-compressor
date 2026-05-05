@@ -66,7 +66,7 @@ This tool automatically compresses any video to fit under the 10MB limit with a 
 | :--- | :--- |
 | **🎯 Smart Bitrate Calculation** | Automatically calculates optimal video bitrate based on duration to hit exactly ~9MB. |
 | **🖥️ Dual Mode: GUI + CLI** | Use the friendly window interface or command-line for batch processing. |
-| **🖱️ Right-Click Integration** | Compress videos instantly via Windows context menu - no need to open the app! |
+| **🖱️ Right-Click Integration** | Windows 11 modern context menu for **.mp4** files - no need to open the app! |
 | **📊 Real-Time Progress** | Watch the compression progress with a live percentage indicator. |
 | **📦 Portable & Self-Contained** | FFmpeg bundled in installer - just download and run! |
 | **🎥 Multi-Format Support** | Works with MP4, MKV, AVI, MOV, and WEBM files. |
@@ -80,12 +80,12 @@ This tool automatically compresses any video to fit under the 10MB limit with a 
 1. Download `Setup_Compress9MB.exe` from [Releases](../../releases)
 2. Run the installer and follow the wizard
 3. ✅ Check **"Create desktop icon"** for quick access
-4. ✅ Check **"Add context menu"** for right-click compression
+4. ✅ Check **"Add Windows 11 modern context menu (MP4)"** for right-click compression
 5. Done! 🎉
 
 ### Option 2: Portable Executable
 
-Download `VideoCompressor9MB.exe` directly and place it alongside `ffmpeg.exe` and `ffprobe.exe`.
+Build or download `VideoCompressor9MB.exe` and place it alongside `ffmpeg.exe` and `ffprobe.exe`.
 
 ### Option 3: Run from Source
 
@@ -117,7 +117,7 @@ python app.py
 
 ### 🖱️ Method 1: Right-Click Menu (Fastest!)
 
-Simply right-click on any video file and select **"Compress to ~9MB"**.
+Simply right-click on any **.mp4** file and select **"Compress to ~9MB"** (Windows 11 modern menu).
 
 ```text
 📁 my_video.mp4
@@ -128,7 +128,7 @@ Simply right-click on any video file and select **"Compress to ~9MB"**.
 
 ### 🖥️ Method 2: GUI Application
 
-Launch `app.exe` and use the visual interface:
+Launch the installed app or `VideoCompressor9MB.exe` from the build output and use the visual interface:
 
 ```text
 ┌─────────────────────────────────────────────┐
@@ -152,9 +152,9 @@ Launch `app.exe` and use the visual interface:
 ### 💻 Method 3: Command Line
 
 ```bash
-# Drag & drop video onto app.exe
+# Drag & drop video onto VideoCompressor9MB.exe (built) or app.exe (installed)
 # Or run via terminal:
-app.exe "C:\path\to\video.mp4"
+VideoCompressor9MB.exe "C:\path\to\video.mp4"
 
 # Output: video_compressed_9mb.mp4
 ```
@@ -201,12 +201,16 @@ MIN_VIDEO_BITRATE_KBPS = 64   # Minimum video bitrate (kbps)
 ```bash
 discord-video-compressor/
 ├── app.py                    # 🐍 Main Application (GUI + CLI)
-├── app.exe                   # 📦 Compiled Executable
 ├── Requirements.txt          # 📋 Python Dependencies
 ├── VideoCompressor9MB.spec   # 🔧 PyInstaller Spec File
 ├── setup_compress9mb.iss     # 📦 Inno Setup Installer Script
+├── shell_extension/          # 🧩 Windows 11 Modern Context Menu (MSIX)
+│   ├── AppxManifest.xml
+│   ├── CompressVideoExtension.dll
+│   ├── CompressVideoExtension.msix
+│   └── install_msix.ps1
 ├── .gitignore                # 🚫 Git Ignore Rules
-├── dist/                     # 📁 Distribution Output
+├── dist/                     # 📁 Distribution Output (generated)
 │   └── VideoCompressor9MB.exe
 └── README.md                 # 📖 This File
 
@@ -243,8 +247,7 @@ The installer provides these configuration options:
 | Option | Description |
 | :--- | :--- |
 | 🖥️ Desktop Icon | Creates shortcut on desktop |
-| 📁 Context Menu (All Files) | Adds "Compress to ~9MB" to all file types |
-| 🎥 Context Menu (Video Only) | Adds menu only for video extensions |
+| 🧩 Windows 11 Modern Context Menu (MP4) | Adds "Compress to ~9MB" to **.mp4** files only |
 
 ---
 
