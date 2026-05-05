@@ -1,0 +1,51 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<Package
+    xmlns='http://schemas.microsoft.com/appx/manifest/foundation/windows10'
+    xmlns:uap='http://schemas.microsoft.com/appx/manifest/uap/windows10'
+    xmlns:desktop4='http://schemas.microsoft.com/appx/manifest/desktop/windows10/4'
+    IgnorableNamespaces='uap desktop4'>
+
+    <Identity
+        Name='DiscordVideoCompressor.ShellExtension'
+        Publisher='CN=DiscordVideoCompressor'
+        Version='1.0.0.0'
+        ProcessorArchitecture='x64' />
+
+    <Properties>
+        <DisplayName>Compress to ~9MB</DisplayName>
+        <PublisherDisplayName>Discord Video Compressor</PublisherDisplayName>
+        <Description>Context menu shell extension</Description>
+        <Logo>Assets\Square44x44Logo.png</Logo>
+    </Properties>
+
+    <Resources>
+        <Resource Language='en-US' />
+    </Resources>
+
+    <Dependencies>
+        <TargetDeviceFamily Name='Windows.Desktop' MinVersion='10.0.19041.0' MaxVersionTested='10.0.22621.0' />
+    </Dependencies>
+
+    <Applications>
+        <Application Id='CompressVideo' Executable='app.exe' EntryPoint='Windows.FullTrustApplication'>
+            <uap:VisualElements
+                AppListEntry='none'
+                DisplayName='Compress to ~9MB'
+                Description='Compress video'
+                BackgroundColor='transparent'
+                Square150x150Logo='Assets\Square150x150Logo.png'
+                Square44x44Logo='Assets\Square44x44Logo.png' />
+        </Application>
+    </Applications>
+
+    <Extensions>
+        <desktop4:Extension Category='windows.fileExplorerContextMenus'>
+            <desktop4:FileExplorerContextMenus>
+                <desktop4:ItemType Type='.mp4'>
+                    <desktop4:Verb Id='CompressVideo' Clsid='D4A8C520-E1C2-4F3E-9B7A-4A8D6C3E5F21' />
+                </desktop4:ItemType>
+            </desktop4:FileExplorerContextMenus>
+        </desktop4:Extension>
+    </Extensions>
+
+</Package>

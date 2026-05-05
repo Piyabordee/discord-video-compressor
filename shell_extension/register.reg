@@ -1,0 +1,28 @@
+Windows Registry Editor Version 5.00
+
+; ============================================
+; Register CompressVideoExtension COM DLL
+; for Windows 11 Modern Context Menu
+; ============================================
+
+; --- Clean up old test entries ---
+[-HKEY_CLASSES_ROOT\*\shell\CompressVideo]
+
+; --- CLSID Registration (COM Server) ---
+[HKEY_CLASSES_ROOT\CLSID\{D4A8C520-E1C2-4F3E-9B7A-4A8D6C3E5F21}]
+@="CompressVideoShellExtension.CompressVideoCommand"
+
+[HKEY_CLASSES_ROOT\CLSID\{D4A8C520-E1C2-4F3E-9B7A-4A8D6C3E5F21}\InProcServer32]
+@="mscoree.dll"
+"ThreadingModel"="Both"
+"Class"="CompressVideoShellExtension.CompressVideoCommand"
+"Assembly"="CompressVideoExtension, Version=1.0.0.0, Culture=neutral"
+"RuntimeVersion"="v4.0.30319"
+"CodeBase"="file:///C:/Program Files/Compress to 9MB/shell/CompressVideoExtension.dll"
+
+; --- ExplorerCommandHandler ---
+[HKEY_CLASSES_ROOT\*\shell\CompressVideo]
+@="Compress to ~9MB"
+"ExplorerCommandHandler"="{D4A8C520-E1C2-4F3E-9B7A-4A8D6C3E5F21}"
+"Icon"="C:\\Program Files\\Compress to 9MB\\app.exe"
+"NeverDefault"=""

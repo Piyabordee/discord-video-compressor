@@ -20,6 +20,7 @@ venv/
 # PyInstaller Build (temp files)
 # -------------------------------
 build/
+dist/
 
 # -------------------------------
 # FFmpeg Binaries (too large ~200MB)
@@ -54,6 +55,19 @@ Output/
 *.temp
 *.bak
 *.log
+
+# -------------------------------
+# Test / Coverage Artifacts
+# -------------------------------
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# -------------------------------
+# Shell Extension Build Artifacts
+# -------------------------------
+shell_extension/staging/
 
 pyplayer-master/
 .venv312/

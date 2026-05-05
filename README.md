@@ -226,7 +226,7 @@ discord-video-compressor/
 pip install pyinstaller
 
 # Build single-file executable
-pyinstaller --onefile --noconsole --name=VideoCompressor9MB app.py
+pyinstaller --onefile --noconsole --name=app --distpath=. app.py
 ```
 
 ### Create Windows Installer

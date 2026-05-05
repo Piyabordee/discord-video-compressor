@@ -1,0 +1,5 @@
+﻿[Files]
+"AppxManifest.xml" "C:\Users\snowb4ll\Documents\discord-video-compressor\shell_extension\AppxManifest.xml"
+"CompressVideoExtension.dll" "C:\Users\snowb4ll\Documents\discord-video-compressor\shell_extension\CompressVideoExtension.dll"
+"Assets\Square44x44Logo.png" "C:\Users\snowb4ll\Documents\discord-video-compressor\shell_extension\Assets\Square44x44Logo.png"
+"Assets\Square150x150Logo.png" "C:\Users\snowb4ll\Documents\discord-video-compressor\shell_extension\Assets\Square150x150Logo.png"
