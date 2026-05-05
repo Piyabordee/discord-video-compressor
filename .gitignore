@@ -15,11 +15,13 @@ __pycache__/
 env/
 venv/
 .venv/
+.venv312/
 
 # -------------------------------
 # PyInstaller Build (temp files)
 # -------------------------------
 build/
+dist/
 
 # -------------------------------
 # FFmpeg Binaries (too large ~200MB)
@@ -46,6 +48,21 @@ desktop.ini
 # Video Output Folder
 # -------------------------------
 Output/
+
+# -------------------------------
+# Shell Extension Build Artifacts
+# -------------------------------
+shell_extension/staging/
+
+# -------------------------------
+# Certificates / Private Keys
+# -------------------------------
+*.pfx
+
+# -------------------------------
+# Built Executables
+# -------------------------------
+app.exe
 
 # -------------------------------
 # Temporary Files

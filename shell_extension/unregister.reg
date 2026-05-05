@@ -1,0 +1,8 @@
+Windows Registry Editor Version 5.00
+
+; ============================================
+; Unregister CompressVideoExtension COM DLL
+; ============================================
+
+[-HKEY_CLASSES_ROOT\*\shell\CompressVideo]
+[-HKEY_CLASSES_ROOT\CLSID\{D4A8C520-E1C2-4F3E-9B7A-4A8D6C3E5F21}]
