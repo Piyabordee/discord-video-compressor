@@ -7,6 +7,10 @@ TARGET_FILESIZE_MB = 8.2
 AUDIO_BITRATE_KBPS = 128
 MIN_VIDEO_BITRATE_KBPS = 64
 
+def calculate_video_bitrate(duration, target_mb=TARGET_FILESIZE_MB, audio_kbps=AUDIO_BITRATE_KBPS):
+    target_total_kbps = (target_mb * 8 * 1024) / duration
+    return target_total_kbps - audio_kbps
+
 def get_ffmpeg_path():
     if getattr(sys, 'frozen', False):
         app_path = os.path.dirname(sys.executable)
@@ -41,8 +45,7 @@ def compress_once(ffmpeg_path, ffprobe_path, input_file, output_file,
     if not os.path.exists(input_file):
         raise FileNotFoundError(input_file)
     dur = get_video_duration(ffprobe_path, input_file)
-    target_total_kbps = (target_mb * 8 * 1024) / dur
-    v_kbps = target_total_kbps - audio_kbps
+    v_kbps = calculate_video_bitrate(dur, target_mb, audio_kbps)
     if v_kbps <= 0:
         raise RuntimeError("วิดีโอยาวเกินไปสำหรับงบขนาดไฟล์/เสียงปัจจุบัน")
     if v_kbps < MIN_VIDEO_BITRATE_KBPS:
@@ -160,8 +163,7 @@ class App:
         self.status.set("สถานะ: กำลังบีบอัด...")
         try:
             dur = get_video_duration(self.ffprobe_path, i)
-            target_total_kbps = (TARGET_FILESIZE_MB * 8 * 1024) / dur
-            v_kbps = target_total_kbps - AUDIO_BITRATE_KBPS
+            v_kbps = calculate_video_bitrate(dur)
             if v_kbps <= 0:
                 raise RuntimeError("วิดีโอยาวเกินไปสำหรับงบขนาดไฟล์/เสียงปัจจุบัน")
             if v_kbps < MIN_VIDEO_BITRATE_KBPS:
@@ -194,8 +196,7 @@ def cli_entry(p):
         import tkinter as tk
         from tkinter import ttk, messagebox
         dur = get_video_duration(fp, p)
-        target_total_kbps = (TARGET_FILESIZE_MB * 8 * 1024) / dur
-        v_kbps = target_total_kbps - AUDIO_BITRATE_KBPS
+        v_kbps = calculate_video_bitrate(dur)
         ffmpeg_cmd = [ff, '-y', '-i', p, '-c:v', 'libx264', '-b:v', f'{int(v_kbps)}k',
                      '-preset', 'medium', '-vsync', '0', '-c:a', 'aac', '-b:a', f'{int(AUDIO_BITRATE_KBPS)}k', out]
         cancelled = False
