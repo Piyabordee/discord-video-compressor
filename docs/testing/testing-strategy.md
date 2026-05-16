@@ -6,14 +6,15 @@
 
 ## Overview
 
-This project has no automated tests yet. This doc defines the testing framework, directory structure, and prioritized test cases to guide implementation. The strategy focuses on unit tests for the core compression logic and integration tests for FFmpeg interactions.
+This project has automated tests for all core functions. Tests use pytest with mocked FFmpeg/subprocess — no external binaries required. The strategy focuses on unit tests for the core compression logic and integration tests for FFmpeg interactions.
 
 ## Context Snapshot
 
-- No tests exist yet — this is a greenfield testing strategy
+- **21 tests** across 3 test files covering core logic (bitrate calculation, FFmpeg helpers, compression)
 - The application is a single 282-line file, so test boundaries are function-level
-- FFmpeg is an external dependency — tests need either mock FFmpeg or test fixtures
-- No CI/CD pipeline exists
+- FFmpeg is mocked via `unittest.mock` — no real ffmpeg binary needed to run tests
+- GUI code (App class, cli_entry) is intentionally untested (low priority)
+- No CI/CD pipeline exists yet
 
 ## When to Read This
 
