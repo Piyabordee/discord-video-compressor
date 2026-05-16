@@ -71,3 +71,30 @@ app.exe
 *.temp
 *.bak
 *.log
+
+# -------------------------------
+# Python Packaging
+# -------------------------------
+*.egg-info/
+*.egg
+
+# -------------------------------
+# Coverage / Testing
+# -------------------------------
+.coverage
+htmlcov/
+.pytest_cache/
+
+# -------------------------------
+# Environment Variables
+# -------------------------------
+.env
+.env.*
+
+# -------------------------------
+# Claude Code (user-specific)
+# Rules in .claude/rules/ are tracked.
+# -------------------------------
+.claude/settings.json
+.claude/settings.local.json
+.claude/scheduled_tasks.json
